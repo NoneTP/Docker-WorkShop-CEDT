@@ -124,7 +124,8 @@ curl -fsS http://localhost:3000/tasks    # should list the seed task
 ### Step 6 — GitHub Actions CI
 
 Open `.github/workflows/ci.yml` and complete `TODO(step-6a)` through `TODO(step-6e)` (5 markers).
-Delete the `workflow_dispatch:` placeholder trigger after you add the real ones in step-6a.
+The completed workflow triggers on pushes to `main` and also supports
+`workflow_dispatch` for manually starting or retrying the workshop pipeline.
 
 **Add secrets to your fork** *before* pushing:
 - GitHub → your fork → **Settings → Secrets and variables → Actions → New repository secret**
