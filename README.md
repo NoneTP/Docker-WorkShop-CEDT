@@ -51,6 +51,12 @@ are unchanged. The dependency lockfile contains a security patch for
   are configured. The hosted `build-scan-push` job must still be run and
   verified after pushing these changes to `main`.
 
+To reproduce the local vulnerability check after building the image:
+
+```bash
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v workshop-trivy-cache:/root/.cache/ aquasec/trivy:0.76.1 image --scanners vuln --severity CRITICAL --exit-code 1 workshop-app
+```
+
 ---
 
 ## Step-by-Step Walkthrough
