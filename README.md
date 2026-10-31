@@ -15,16 +15,41 @@ checklist item in the Self-Verification section below — tick them off as you g
 
 Tick each box as you complete it. The workshop is **done** when all 10 are ticked.
 
-- [ ] **AC-01:** `docker build -t workshop-app .` exits with status 0 locally.
-- [ ] **AC-02:** Dockerfile uses a multi-stage build (`grep -c '^FROM' Dockerfile` = 2).
-- [ ] **AC-03:** `.dockerignore` excludes at least `node_modules`, `.git`, and `.env`.
-- [ ] **AC-04:** Dockerfile contains a `HEALTHCHECK` instruction.
-- [ ] **AC-05:** `docker compose up -d` brings up two healthy containers within 60 seconds.
-- [ ] **AC-06:** `web` waits for `db` health (`docker compose config` shows `condition: service_healthy`).
-- [ ] **AC-07:** `.github/workflows/ci.yml` triggers on`push` to `main`.
-- [ ] **AC-08:** The CI step `scan` uses `aquasecurity/trivy-action` with `severity: CRITICAL` and `exit-code: '1'`, and reports **0 CRITICAL** findings.
-- [ ] **AC-09:** The CI step `push` pushes two tags: `:latest` and `:${{ github.sha }}`.
+- [x] **AC-01:** `docker build -t workshop-app .` exits with status 0 locally.
+- [x] **AC-02:** Dockerfile uses a multi-stage build (`grep -c '^FROM' Dockerfile` = 2).
+- [x] **AC-03:** `.dockerignore` excludes at least `node_modules`, `.git`, and `.env`.
+- [x] **AC-04:** Dockerfile contains a `HEALTHCHECK` instruction.
+- [x] **AC-05:** `docker compose up -d` brings up two healthy containers within 60 seconds.
+- [x] **AC-06:** `web` waits for `db` health (`docker compose config` shows `condition: service_healthy`).
+- [x] **AC-07:** `.github/workflows/ci.yml` triggers on`push` to `main`.
+- [x] **AC-08:** The CI step `scan` uses `aquasecurity/trivy-action` with `severity: CRITICAL` and `exit-code: '1'`, and reports **0 CRITICAL** findings.
+- [x] **AC-09:** The CI step `push` pushes two tags: `:latest` and `:${{ github.sha }}`.
 - [ ] **AC-10:** The `build-scan-push` job goes green on your fork after Docker Hub secrets are configured.
+
+### Local verification — 2026-11-01
+
+All infrastructure TODOs are filled in, and `.env` was copied from `.env.example`
+(and remains ignored by Git). The application source, SQL, and `package.json`
+are unchanged. The dependency lockfile contains a security patch for
+`proxy-addr` from 2.0.7 to 2.0.8.
+
+- The image build and `docker compose config --quiet` pass.
+- `docker compose up -d --build --wait --wait-timeout 60` brought both services
+  to healthy in 12.79 seconds, including the cached image build.
+- `/` returns `{"ok":true,"service":"workshop-app"}`, `/health` returns
+  `{"status":"ok"}`, and `/tasks` returns the seed task.
+- `actionlint` passes. AC-07 and AC-09 are verified from the workflow
+  configuration; publishing has not been exercised on GitHub.
+- **AC-08 passes locally:** Trivy 0.76.1 with `--severity CRITICAL --exit-code 1`
+  returns exit code 0 with zero CRITICAL findings, including unfixed issues.
+  Both Docker stages now use `node:24.22.2-trixie-slim`; the original
+  `node:20.11-slim` base and `proxy-addr` lockfile entry needed security
+  updates. CI uses the same scanner version and does not ignore unfixed
+  vulnerabilities. This is a deliberate security update to the starter's
+  prescribed versions; the two-stage build and app behavior are preserved.
+- **AC-10 remains open:** GitHub authentication and both Docker Hub secrets
+  are configured. The hosted `build-scan-push` job must still be run and
+  verified after pushing these changes to `main`.
 
 ---
 
@@ -47,7 +72,9 @@ Open `app/src/index.js`. Notice the three routes:
 - `GET /health` → 200 if it can reach Postgres, 503 otherwise (the Dockerfile HEALTHCHECK hits this)
 - `GET /tasks` → list from the `tasks` table, seeded by `app/db/init.sql`
 
-You will **not** modify any file under `app/`.
+Keep the application source and database initialization code unchanged.
+The completed workshop updates only `app/package-lock.json` for the
+`proxy-addr` security patch described above.
 
 ### Step 3 — `.dockerignore`
 
@@ -63,7 +90,9 @@ Should print three matching lines.
 
 Open `Dockerfile` and complete `TODO(step-4a)` through `TODO(step-4g)` (7 markers).
 Pay special attention to **step-4f** — the HEALTHCHECK uses a **Node one-liner**
-because `node:20.11-slim` does **not** include `curl` or `wget`.
+because the slim Node image does **not** include `curl` or `wget`.
+The completed Dockerfile uses the pinned `node:24.22.2-trixie-slim` tag for
+both stages to address vulnerabilities in the starter's older Node image.
 
 ### Step 5 — docker-compose.yml
 
@@ -122,7 +151,7 @@ When `build-scan-push` goes green, your image is live on Docker Hub at
 ├── .github/workflows/ci.yml     # 5 TODOs (step-6a..e)
 └── app/
     ├── package.json             # complete — do not edit
-    ├── package-lock.json        # complete — do not edit
+    ├── package-lock.json        # proxy-addr security patch applied
     ├── db/init.sql              # complete — do not edit
     └── src/
         ├── index.js             # complete — do not edit
