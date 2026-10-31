@@ -24,7 +24,7 @@ Tick each box as you complete it. The workshop is **done** when all 10 are ticke
 - [x] **AC-07:** `.github/workflows/ci.yml` triggers on`push` to `main`.
 - [x] **AC-08:** The CI step `scan` uses `aquasecurity/trivy-action` with `severity: CRITICAL` and `exit-code: '1'`, and reports **0 CRITICAL** findings.
 - [x] **AC-09:** The CI step `push` pushes two tags: `:latest` and `:${{ github.sha }}`.
-- [ ] **AC-10:** The `build-scan-push` job goes green on your fork after Docker Hub secrets are configured.
+- [x] **AC-10:** The `build-scan-push` job goes green on your fork after Docker Hub secrets are configured.
 
 ### Local verification — 2026-11-01
 
@@ -38,8 +38,7 @@ are unchanged. The dependency lockfile contains a security patch for
   to healthy in 12.79 seconds, including the cached image build.
 - `/` returns `{"ok":true,"service":"workshop-app"}`, `/health` returns
   `{"status":"ok"}`, and `/tasks` returns the seed task.
-- `actionlint` passes. AC-07 and AC-09 are verified from the workflow
-  configuration; publishing has not been exercised on GitHub.
+- `actionlint` passes. Pushes to `main` and manual runs are configured.
 - **AC-08 passes locally:** Trivy 0.76.1 with `--severity CRITICAL --exit-code 1`
   returns exit code 0 with zero CRITICAL findings, including unfixed issues.
   Both Docker stages now use `node:24.22.2-trixie-slim`; the original
@@ -47,9 +46,16 @@ are unchanged. The dependency lockfile contains a security patch for
   updates. CI uses the same scanner version and does not ignore unfixed
   vulnerabilities. This is a deliberate security update to the starter's
   prescribed versions; the two-stage build and app behavior are preserved.
-- **AC-10 remains open:** GitHub authentication and both Docker Hub secrets
-  are configured. The hosted `build-scan-push` job must still be run and
-  verified after pushing these changes to `main`.
+- **AC-10 passes:** [CI run 41226591762](https://github.com/NoneTP/Docker-WorkShop-CEDT/actions/runs/41226591762)
+  completed successfully; `build-scan-push` finished in 43 seconds with the
+  hosted Trivy scan, Docker Hub login, and both pushes passing.
+- Docker Hub confirms `nonetp/workshop-app:latest` and
+  `nonetp/workshop-app:146ccdd72390137f255d03ab6ae4f9f88be1d53b` exist and share
+  digest `sha256:b84fca29356ec673dbb2d6c00341ad6dff2032c97dbf8007e70b315172a2afca`.
+  Use the [successful job](https://github.com/NoneTP/Docker-WorkShop-CEDT/actions/runs/41226591762/job/124611934390)
+  for the worksheet's scan screenshot, the run summary for the workflow
+  screenshot, and [Docker Hub tags](https://hub.docker.com/r/nonetp/workshop-app/tags)
+  for the registry screenshot.
 
 To reproduce the local vulnerability check after building the image:
 
